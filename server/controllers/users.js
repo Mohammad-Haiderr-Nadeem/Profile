@@ -104,7 +104,67 @@ const showData = async (req, res) => {
   }
 };
 
+const updateData = async (req, res) => {
+  try {
+    const { id } = await req.params;
+    const { firstName, lastName, email, gender } = await req.body;
+    const { image } = await req;
+
+    if (firstName && lastName && email && gender) {
+      const encryptedFirstName = CryptoJS.AES.encrypt(
+        firstName,
+        process.env.MY_SECRET_KEY
+      ).toString();
+      const encryptedLastName = CryptoJS.AES.encrypt(
+        lastName,
+        process.env.MY_SECRET_KEY
+      ).toString();
+      const encryptedEmail = CryptoJS.AES.encrypt(
+        email,
+        process.env.MY_SECRET_KEY
+      ).toString();
+      const encryptedGender = CryptoJS.AES.encrypt(
+        gender,
+        process.env.MY_SECRET_KEY
+      ).toString();
+
+      const user = await modal.User.findOne({ where: { id } });
+
+      if (!image) {
+        await user.update({
+          firstName: encryptedFirstName,
+          lastName: encryptedLastName,
+          email: encryptedEmail,
+          gender: encryptedGender,
+          image: user.image,
+        });
+        await user.save();
+      } else {
+        const encryptedImage = CryptoJS.AES.encrypt(
+          image,
+          process.env.MY_SECRET_KEY
+        ).toString();
+        await user.update({
+          firstName: encryptedFirstName,
+          lastName: encryptedLastName,
+          email: encryptedEmail,
+          gender: encryptedGender,
+          image: encryptedImage,
+        });
+        await user.save();
+      }
+      return res.status(201).json({ msg: "SUCCESS" });
+    } else {
+      return res.status(400).json({ msg: "EMPTY DATA" });
+    }
+  } catch (err) {
+    console.log("error in updating your data", err);
+    return res.status(400).json({ msg: "FAILED" });
+  }
+};
+
 module.exports = {
   addData,
   showData,
+  updateData,
 };
