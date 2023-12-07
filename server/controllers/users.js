@@ -139,6 +139,7 @@ const updateData = async (req, res) => {
           image: user.image,
         });
         await user.save();
+        return res.status(201).json({ msg: "SUCCESS" });
       } else {
         const encryptedImage = CryptoJS.AES.encrypt(
           image,
@@ -152,8 +153,8 @@ const updateData = async (req, res) => {
           image: encryptedImage,
         });
         await user.save();
+        return res.status(201).json({ msg: "UPDATED" });
       }
-      return res.status(201).json({ msg: "SUCCESS" });
     } else {
       return res.status(400).json({ msg: "EMPTY DATA" });
     }
